@@ -440,7 +440,6 @@ def register_routes(app):
                         from_date=from_date,
                         to_date=to_date,
                         is_training=is_train,
-                        date=None,
                         ou_id=int(ou_ids[i]) if is_train and ou_ids[i] else None,
                         training_type_id=int(type_ids[i]) if is_train and type_ids[i] else None,
                         title=titles[i],

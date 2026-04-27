@@ -32,7 +32,16 @@ def migrate():
             cursor.execute("ALTER TABLE training_entries MODIFY training_type_id INTEGER NULL")
             print("Modified ou_id and training_type_id to be NULLable.")
         except Exception as e:
-            print(f"Error modifying columns: {e}")
+            print(f"Error modifying columns in training_entries: {e}")
+            
+        # Drop date column if it exists
+        try:
+            cursor.execute("ALTER TABLE training_entries DROP COLUMN date")
+            print("Dropped date column from training_entries.")
+        except Exception as e:
+            # 1091 is error code for "Can't DROP 'column'; check that column/key exists"
+            if '1091' not in str(e):
+                print(f"Error dropping date column: {e}")
             
         conn.commit()
         cursor.close()

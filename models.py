@@ -41,7 +41,6 @@ class TrainingEntry(db.Model):
     trainer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     from_date = db.Column(db.Date, nullable=False)
     to_date = db.Column(db.Date, nullable=False)
-    date = db.Column(db.Date, nullable=True) # Specific date of the training
     is_training = db.Column(db.Boolean, default=True, nullable=False)
     ou_id = db.Column(db.Integer, db.ForeignKey('organizational_units.id'), nullable=True)
     training_type_id = db.Column(db.Integer, db.ForeignKey('training_types.id'), nullable=True)
