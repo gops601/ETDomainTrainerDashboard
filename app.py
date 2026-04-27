@@ -88,7 +88,7 @@ def register_routes(app):
     @app.route('/')
     def index():
         if current_user.is_authenticated:
-            if current_user.role == 'admin':
+            if current_user.role in ['admin', 'domain_lead']:
                 return redirect(url_for('admin_dashboard'))
             else:
                 return redirect(url_for('trainer_dashboard'))
@@ -143,15 +143,25 @@ def register_routes(app):
     # ==========================
     @app.route('/admin/dashboard')
     @login_required
-    @admin_required
     def admin_dashboard():
+        if current_user.role not in ['admin', 'domain_lead']:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('trainer_dashboard'))
+            
         week_from = request.args.get('week_from')
         week_to = request.args.get('week_to')
         trainer_id = request.args.get('trainer_id')
         ou_id = request.args.get('ou_id')
         type_id = request.args.get('type_id')
+        domain_filter = request.args.get('domain')
         
-        query = TrainingEntry.query
+        query = TrainingEntry.query.join(User)
+        
+        # Domain restriction
+        if current_user.role == 'domain_lead':
+            query = query.filter(User.domain == current_user.domain)
+        elif domain_filter:
+            query = query.filter(User.domain == domain_filter)
         
         if week_from:
             query = query.filter(TrainingEntry.from_date >= week_from)
@@ -179,7 +189,11 @@ def register_routes(app):
             'total_entries': total_entries
         }
         
-        trainers = User.query.filter_by(role='trainer').all()
+        if current_user.role == 'domain_lead':
+            trainers = User.query.filter(User.role.in_(['trainer', 'domain_lead']), User.domain == current_user.domain).all()
+        else:
+            trainers = User.query.filter(User.role.in_(['trainer', 'domain_lead'])).all()
+            
         ous = OU.query.all()
         training_types = TrainingType.query.all()
         
@@ -187,32 +201,60 @@ def register_routes(app):
 
     @app.route('/admin/trainers', methods=['GET', 'POST'])
     @login_required
-    @admin_required
     def manage_trainers():
+        if current_user.role not in ['admin', 'domain_lead']:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('trainer_dashboard'))
+
         if request.method == 'POST':
             name = request.form.get('name')
             email = request.form.get('email')
             role = request.form.get('role', 'trainer')
+            domain = request.form.get('domain')
+            trainer_type = request.form.get('trainer_type', 'Inhouse')
+            external_type = request.form.get('external_type')
+            tsp_name = request.form.get('tsp_name')
+            
+            # Domain leads can only add trainers to their own domain
+            if current_user.role == 'domain_lead':
+                role = 'trainer'
+                domain = current_user.domain
             
             existing = User.query.filter_by(email=email).first()
             if existing:
                 flash('Email already registered.', 'danger')
             else:
                 hashed = bcrypt.generate_password_hash('Trainer@ict').decode('utf-8')
-                new_user = User(name=name, email=email, password=hashed, role=role, must_change_password=True)
+                new_user = User(
+                    name=name, email=email, password=hashed, 
+                    role=role, domain=domain, must_change_password=True,
+                    trainer_type=trainer_type, external_type=external_type,
+                    tsp_name=tsp_name
+                )
                 db.session.add(new_user)
                 db.session.commit()
                 flash('Trainer added successfully with default password Trainer@ict.', 'success')
             return redirect(url_for('manage_trainers'))
             
-        trainers = User.query.all()
+        if current_user.role == 'domain_lead':
+            trainers = User.query.filter(User.role.in_(['trainer', 'domain_lead']), User.domain == current_user.domain).all()
+        else:
+            trainers = User.query.filter(User.role.in_(['trainer', 'domain_lead'])).all()
+            
         return render_template('admin/manage_trainers.html', trainers=trainers)
         
     @app.route('/admin/trainers/delete/<int:id>')
     @login_required
-    @admin_required
     def delete_trainer(id):
+        if current_user.role not in ['admin', 'domain_lead']:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('trainer_dashboard'))
+            
         user = User.query.get_or_404(id)
+        
+        if current_user.role == 'domain_lead' and user.domain != current_user.domain:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('manage_trainers'))
         if user.id == current_user.id:
             flash('You cannot delete yourself!', 'danger')
         else:
@@ -223,9 +265,16 @@ def register_routes(app):
         
     @app.route('/admin/trainers/reset_password/<int:id>')
     @login_required
-    @admin_required
     def reset_password(id):
+        if current_user.role not in ['admin', 'domain_lead']:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('trainer_dashboard'))
+            
         user = User.query.get_or_404(id)
+        
+        if current_user.role == 'domain_lead' and user.domain != current_user.domain:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('manage_trainers'))
         user.password = bcrypt.generate_password_hash('Trainer@ict').decode('utf-8')
         user.must_change_password = True
         db.session.commit()
@@ -334,7 +383,7 @@ def register_routes(app):
     @app.route('/trainer/dashboard')
     @login_required
     def trainer_dashboard():
-        if current_user.role != 'trainer' and current_user.role != 'admin':
+        if current_user.role not in ['trainer', 'admin', 'domain_lead']:
             return redirect(url_for('index'))
             
         entries = TrainingEntry.query.filter_by(trainer_id=current_user.id).order_by(TrainingEntry.created_at.desc()).all()
@@ -389,6 +438,7 @@ def register_routes(app):
                         from_date=from_date,
                         to_date=to_date,
                         is_training=is_train,
+                        date=None,
                         ou_id=int(ou_ids[i]) if is_train and ou_ids[i] else None,
                         training_type_id=int(type_ids[i]) if is_train and type_ids[i] else None,
                         title=titles[i],

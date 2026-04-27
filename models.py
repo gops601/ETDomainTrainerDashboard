@@ -10,7 +10,11 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='trainer') # 'admin' or 'trainer'
+    role = db.Column(db.String(20), nullable=False, default='trainer') # 'admin', 'domain_lead', 'trainer'
+    domain = db.Column(db.String(50), nullable=True) # e.g. 'ET', 'AI', 'Cyber', 'DM'
+    trainer_type = db.Column(db.String(20), nullable=True) # 'Inhouse', 'External'
+    external_type = db.Column(db.String(20), nullable=True) # 'TSP', 'Empanelled'
+    tsp_name = db.Column(db.String(100), nullable=True)
     must_change_password = db.Column(db.Boolean, default=False, nullable=False)
     
     entries = db.relationship('TrainingEntry', backref='trainer', lazy=True)
@@ -37,6 +41,7 @@ class TrainingEntry(db.Model):
     trainer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     from_date = db.Column(db.Date, nullable=False)
     to_date = db.Column(db.Date, nullable=False)
+    date = db.Column(db.Date, nullable=True) # Specific date of the training
     is_training = db.Column(db.Boolean, default=True, nullable=False)
     ou_id = db.Column(db.Integer, db.ForeignKey('organizational_units.id'), nullable=True)
     training_type_id = db.Column(db.Integer, db.ForeignKey('training_types.id'), nullable=True)

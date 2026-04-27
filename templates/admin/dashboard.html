@@ -67,6 +67,19 @@
                 </select>
             </div>
             
+            {% if current_user.role == 'admin' %}
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="domain">Domain</label>
+                <select class="form-control" name="domain">
+                    <option value="">All Domains</option>
+                    <option value="ET" {% if request.args.get('domain') == 'ET' %}selected{% endif %}>ET</option>
+                    <option value="AI" {% if request.args.get('domain') == 'AI' %}selected{% endif %}>AI</option>
+                    <option value="Cyber" {% if request.args.get('domain') == 'Cyber' %}selected{% endif %}>Cyber</option>
+                    <option value="DM" {% if request.args.get('domain') == 'DM' %}selected{% endif %}>DM</option>
+                </select>
+            </div>
+            {% endif %}
+            
             <div style="margin-bottom: 0;">
                 <button type="submit" class="btn btn-primary">Filter</button>
                 <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Clear</a>
@@ -86,6 +99,7 @@
                     <th>Date Range</th>
                     <th>Activity</th>
                     <th>Trainer</th>
+                    <th>Domain</th>
                     <th>OU</th>
                     <th>Training Type</th>
                     <th>Title</th>
@@ -99,7 +113,7 @@
             <tbody>
                 {% for entry in entries %}
                 <tr>
-                    <td>{{ entry.from_date.strftime('%Y-%m-%d') }}<br>to<br>{{ entry.to_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ entry.from_date.strftime('%d/%m/%Y') }} - {{ entry.to_date.strftime('%d/%m/%Y') }}</td>
                     <td>
                         {% if entry.is_training %}
                         <span style="background-color: #D1FAE5; color: #065F46; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Training</span>
@@ -108,6 +122,7 @@
                         {% endif %}
                     </td>
                     <td>{{ entry.trainer.name }}</td>
+                    <td>{{ entry.trainer.domain or '-' }}</td>
                     <td>{{ entry.ou.name if entry.is_training else '-' }}</td>
                     <td>{{ entry.training_type.name if entry.is_training else '-' }}</td>
                     <td>{{ entry.title }}</td>
@@ -121,11 +136,53 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="11" style="text-align: center; color: var(--text-muted);">No entries found.</td>
+                    <td colspan="13" style="text-align: center; color: var(--text-muted);">No entries found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+    const trainingTypesData = [
+        {% for type in training_types %}
+        { id: "{{ type.id }}", name: "{{ type.name }}", ou_id: "{{ type.ou_id }}" }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const ouSelect = document.querySelector('.ou-select');
+        const typeSelect = document.querySelector('.type-select');
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialTypeId = urlParams.get('type_id');
+        
+        if (ouSelect && typeSelect) {
+            ouSelect.addEventListener('change', function() {
+                const selectedOuId = this.value;
+                
+                // Clear existing options
+                typeSelect.innerHTML = '<option value="">All Types</option>';
+                
+                const filteredTypes = selectedOuId 
+                    ? trainingTypesData.filter(t => t.ou_id === selectedOuId)
+                    : trainingTypesData;
+                    
+                filteredTypes.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.id;
+                    option.textContent = t.name;
+                    // Try to preserve selection if it matches the newly filtered list
+                    if (initialTypeId && t.id === initialTypeId) {
+                        option.selected = true;
+                    }
+                    typeSelect.appendChild(option);
+                });
+            });
+            
+            // Trigger once on load to set initial state correctly
+            ouSelect.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
 {% endblock %}

@@ -17,15 +17,72 @@
             <label class="form-label">Email</label>
             <input type="email" name="email" class="form-control" required>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="{% if current_user.role == 'domain_lead' %}display: none;{% endif %}">
             <label class="form-label">Role</label>
             <select name="role" class="form-control">
                 <option value="trainer">Trainer</option>
+                <option value="domain_lead">Domain Lead</option>
                 <option value="admin">Admin</option>
             </select>
         </div>
+        <div class="form-group" style="{% if current_user.role == 'domain_lead' %}display: none;{% endif %}">
+            <label class="form-label">Domain</label>
+            <select name="domain" class="form-control" {% if current_user.role == 'admin' %}required{% endif %}>
+                <option value="">Select Domain</option>
+                <option value="ET">ET</option>
+                <option value="AI">AI</option>
+                <option value="Cyber">Cyber</option>
+                <option value="DM">DM</option>
+            </select>
+        </div>
+        <div class="form-group" id="trainer_type_group">
+            <label class="form-label">Trainer Type</label>
+            <select name="trainer_type" id="trainer_type" class="form-control" onchange="toggleExternalFields()">
+                <option value="Inhouse">Inhouse</option>
+                <option value="External">External</option>
+            </select>
+        </div>
+        <div class="form-group" id="external_type_group" style="display: none;">
+            <label class="form-label">External Type</label>
+            <select name="external_type" id="external_type" class="form-control" onchange="toggleTSPField()">
+                <option value="Empanelled">Empanelled</option>
+                <option value="TSP">TSP</option>
+            </select>
+        </div>
+        <div class="form-group" id="tsp_name_group" style="display: none;">
+            <label class="form-label">TSP Name</label>
+            <input type="text" name="tsp_name" class="form-control" placeholder="Optional">
+        </div>
         <button type="submit" class="btn btn-primary">Add User</button>
     </form>
+
+    <script>
+        function toggleExternalFields() {
+            const type = document.getElementById('trainer_type').value;
+            const externalGroup = document.getElementById('external_type_group');
+            const tspGroup = document.getElementById('tsp_name_group');
+            
+            if (type === 'External') {
+                externalGroup.style.display = 'block';
+                toggleTSPField();
+            } else {
+                externalGroup.style.display = 'none';
+                tspGroup.style.display = 'none';
+            }
+        }
+
+        function toggleTSPField() {
+            const extType = document.getElementById('external_type').value;
+            const tspGroup = document.getElementById('tsp_name_group');
+            const trainerType = document.getElementById('trainer_type').value;
+            
+            if (trainerType === 'External' && extType === 'TSP') {
+                tspGroup.style.display = 'block';
+            } else {
+                tspGroup.style.display = 'none';
+            }
+        }
+    </script>
 
     <div class="table-container">
         <table>
@@ -34,6 +91,9 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Domain</th>
+                    <th>Type</th>
+                    <th>Info</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -44,9 +104,18 @@
                     <td>{{ trainer.email }}</td>
                     <td>
                         <span
-                            style="background-color: {% if trainer.role == 'admin' %}#DBEAFE{% else %}#D1FAE5{% endif %}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                            style="background-color: {% if trainer.role == 'admin' %}#DBEAFE{% elif trainer.role == 'domain_lead' %}#FEF3C7{% else %}#D1FAE5{% endif %}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
                             {{ trainer.role | title }}
                         </span>
+                    </td>
+                    <td>{{ trainer.domain or '-' }}</td>
+                    <td>{{ trainer.trainer_type or 'Inhouse' }}</td>
+                    <td>
+                        {% if trainer.trainer_type == 'External' %}
+                            {{ trainer.external_type }} {% if trainer.tsp_name %}({{ trainer.tsp_name }}){% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
                     <td>
                         {% if trainer.id != current_user.id %}
