@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Submit Weekly Training Entry</h2>
+    </div>
+    
+    <form method="POST" action="{{ url_for('trainer_entry') }}">
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <div class="form-group" style="flex: 1;">
+                <label class="form-label">Week From Date</label>
+                <input type="date" name="from_date" class="form-control" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label class="form-label">Week To Date</label>
+                <input type="date" name="to_date" class="form-control" required>
+            </div>
+        </div>
+
+        <div class="card-header" style="margin-top: 1rem;">
+            <h3>Training Details</h3>
+            <button type="button" id="add-row-btn" class="btn btn-secondary btn-sm">+ Add Row</button>
+        </div>
+
+        <div id="entries-container">
+            <!-- First Row -->
+            <div class="entry-row">
+                <div class="form-group" style="grid-column: span 6;">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" name="is_training_cb" class="is-training-cb" value="false">
+                        <span>This is a Non-Training Activity (e.g. Leave, Internal Meeting)</span>
+                    </label>
+                    <input type="hidden" name="is_training[]" class="is-training-hidden" value="true">
+                </div>
+
+                <div class="form-group training-field">
+                    <label class="form-label">OU</label>
+                    <select name="ou_id[]" class="form-control ou-select" required>
+                        <option value="">Select OU</option>
+                        {% for ou in ous %}
+                        <option value="{{ ou.id }}">{{ ou.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group training-field">
+                    <label class="form-label">Training Type</label>
+                    <select name="type_id[]" class="form-control type-select" required>
+                        <option value="">Select Type</option>
+                        {% for type in training_types %}
+                        <option value="{{ type.id }}">{{ type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title[]" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Duration (hrs)</label>
+                    <input type="number" name="duration[]" class="form-control" required min="0" step="0.5">
+                </div>
+                
+                <div class="form-group training-field">
+                    <label class="form-label">Participants</label>
+                    <input type="number" name="participants[]" class="form-control" required min="1">
+                </div>
+                
+                <div class="form-group training-field">
+                    <label class="form-label">Mode</label>
+                    <select name="mode[]" class="form-control" required>
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="grid-column: span 1;">
+                    <label class="form-label">Remarks / Feedback</label>
+                    <textarea name="remarks[]" class="form-control" rows="2" style="resize: vertical;"></textarea>
+                </div>
+                
+                <!-- No remove button for the first row initially -->
+                <div class="form-group remove-btn-container"></div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 1rem; width: 100%; font-size: 1rem; padding: 0.75rem;">Submit All Entries</button>
+    </form>
+</div>
+{% endblock %}

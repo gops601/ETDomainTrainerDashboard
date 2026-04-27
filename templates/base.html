@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Data Access Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    
+    {% if current_user.is_authenticated %}
+    <aside class="sidebar">
+        <div class="logo">
+            Training Dashboard
+        </div>
+        <nav>
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('manage_trainers') }}" class="{% if request.endpoint == 'manage_trainers' %}active{% endif %}">Trainers</a>
+            <a href="{{ url_for('manage_ous') }}" class="{% if request.endpoint == 'manage_ous' %}active{% endif %}">Organizational Units</a>
+            <a href="{{ url_for('manage_training_types') }}" class="{% if request.endpoint == 'manage_training_types' %}active{% endif %}">Training Types</a>
+            {% else %}
+            <a href="{{ url_for('trainer_dashboard') }}" class="{% if request.endpoint == 'trainer_dashboard' %}active{% endif %}">My Entries</a>
+            {% endif %}
+            
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <p style="padding: 0.75rem 1rem; color: var(--text-main); font-size: 0.875rem;">
+                    <strong>{{ current_user.name }}</strong><br>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">{{ current_user.role | title }}</span>
+                </p>
+                <a href="{{ url_for('logout') }}" style="color: var(--danger-color);">Logout</a>
+            </div>
+        </nav>
+    </aside>
+    {% endif %}
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

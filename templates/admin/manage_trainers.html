@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Manage Trainers</h2>
+    </div>
+
+    <form method="POST" action="{{ url_for('manage_trainers') }}" style="max-width: 500px; margin-bottom: 2rem;">
+        <h4>Add New Trainer</h4>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">New users will be assigned the default password <strong>Trainer@ict</strong> and forced to change it on their first login.</p>
+        <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Role</label>
+            <select name="role" class="form-control">
+                <option value="trainer">Trainer</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add User</button>
+    </form>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trainer in trainers %}
+                <tr>
+                    <td>{{ trainer.name }}</td>
+                    <td>{{ trainer.email }}</td>
+                    <td>
+                        <span
+                            style="background-color: {% if trainer.role == 'admin' %}#DBEAFE{% else %}#D1FAE5{% endif %}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                            {{ trainer.role | title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if trainer.id != current_user.id %}
+                        <a href="{{ url_for('reset_password', id=trainer.id) }}" class="btn btn-secondary btn-sm" onclick="return confirm('Reset this user\'s password to Trainer@ict?')">Reset Password</a>
+                        <a href="{{ url_for('delete_trainer', id=trainer.id) }}" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure?')">Delete</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Manage Organizational Units (OU)</h2>
+    </div>
+    
+    {% if current_user.role == 'admin' %}
+    <form method="POST" action="{{ url_for('manage_ous') }}" style="max-width: 500px; margin-bottom: 2rem;">
+        <h4>Add New OU</h4>
+        <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">OU Name</label>
+            <input type="text" name="name" class="form-control" required placeholder="e.g. Academic OU">
+        </div>
+        <button type="submit" class="btn btn-primary">Add OU</button>
+    </form>
+    {% endif %}
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>OU Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ou in ous %}
+                <tr>
+                    <td>{{ ou.id }}</td>
+                    <td>{{ ou.name }}</td>
+                    <td>
+                        {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('delete_ou', id=ou.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure? This will delete all associated training types and entries.')">Delete</a>
+                        {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">Admin only</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

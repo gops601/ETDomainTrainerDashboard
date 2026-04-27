@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Manage Training Types</h2>
+    </div>
+    
+    {% if current_user.role == 'admin' %}
+    <form method="POST" action="{{ url_for('manage_training_types') }}" style="max-width: 500px; margin-bottom: 2rem;">
+        <h4>Add New Training Type</h4>
+        <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Associated OU</label>
+            <select name="ou_id" class="form-control" required>
+                <option value="">Select OU</option>
+                {% for ou in ous %}
+                <option value="{{ ou.id }}">{{ ou.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Training Type Name</label>
+            <input type="text" name="name" class="form-control" required placeholder="e.g. Internship">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Training Type</button>
+    </form>
+    {% endif %}
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Training Type Name</th>
+                    <th>Associated OU</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for type in types %}
+                <tr>
+                    <td>{{ type.id }}</td>
+                    <td>{{ type.name }}</td>
+                    <td><span style="background: #E5E7EB; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">{{ type.ou.name }}</span></td>
+                    <td>
+                        {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('delete_training_type', id=type.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure? This will delete associated entries.')">Delete</a>
+                        {% else %}
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">Admin only</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

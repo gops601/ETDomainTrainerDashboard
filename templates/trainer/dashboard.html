@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>My Performance</h2>
+    </div>
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_training_hrs | round(1) }}</div>
+            <div class="kpi-label">Training Hours</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_non_training_hrs | round(1) }}</div>
+            <div class="kpi-label">Non-Training Hours</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_participants }}</div>
+            <div class="kpi-label">Total Participants</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_entries }}</div>
+            <div class="kpi-label">Total Submissions</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>My Submissions</h2>
+        <a href="{{ url_for('trainer_entry') }}" class="btn btn-primary">+ New Entry</a>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Range</th>
+                    <th>Activity</th>
+                    <th>OU</th>
+                    <th>Training Type</th>
+                    <th>Title</th>
+                    <th>Duration (hrs)</th>
+                    <th>Participants</th>
+                    <th>Mode</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.from_date.strftime('%Y-%m-%d') }}<br>to<br>{{ entry.to_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if entry.is_training %}
+                        <span style="background-color: #D1FAE5; color: #065F46; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Training</span>
+                        {% else %}
+                        <span style="background-color: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Non-Training</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ entry.ou.name if entry.is_training else '-' }}</td>
+                    <td>{{ entry.training_type.name if entry.is_training else '-' }}</td>
+                    <td>{{ entry.title }}</td>
+                    <td>{{ entry.duration }}</td>
+                    <td>{{ entry.participants_count if entry.is_training else '-' }}</td>
+                    <td>{{ entry.mode if entry.is_training else '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('delete_entry', id=entry.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this entry?')">Delete</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" style="text-align: center; color: var(--text-muted);">You have no entries yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

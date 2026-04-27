@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Admin Dashboard</h2>
+    </div>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_training_hrs | round(1) }}</div>
+            <div class="kpi-label">Training Hours</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_non_training_hrs | round(1) }}</div>
+            <div class="kpi-label">Non-Training Hours</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_participants }}</div>
+            <div class="kpi-label">Total Participants</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_entries }}</div>
+            <div class="kpi-label">Total Submissions</div>
+        </div>
+    </div>
+    
+    <div class="filters-container">
+        <form method="GET" action="{{ url_for('admin_dashboard') }}" style="display: flex; gap: 1rem; width: 100%; flex-wrap: wrap; align-items: end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="week_from">From Date</label>
+                <input type="date" class="form-control" name="week_from" value="{{ request.args.get('week_from', '') }}">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="week_to">To Date</label>
+                <input type="date" class="form-control" name="week_to" value="{{ request.args.get('week_to', '') }}">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="trainer_id">Trainer</label>
+                <select class="form-control" name="trainer_id">
+                    <option value="">All Trainers</option>
+                    {% for trainer in trainers %}
+                    <option value="{{ trainer.id }}" {% if request.args.get('trainer_id') == trainer.id|string %}selected{% endif %}>{{ trainer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="ou_id">OU</label>
+                <select class="form-control ou-select" name="ou_id">
+                    <option value="">All OUs</option>
+                    {% for ou in ous %}
+                    <option value="{{ ou.id }}" {% if request.args.get('ou_id') == ou.id|string %}selected{% endif %}>{{ ou.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="type_id">Training Type</label>
+                <select class="form-control type-select" name="type_id">
+                    <option value="">All Types</option>
+                    {% for type in training_types %}
+                    <option value="{{ type.id }}" {% if request.args.get('type_id') == type.id|string %}selected{% endif %}>{{ type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 0;">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>Training Entries</h3>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Range</th>
+                    <th>Activity</th>
+                    <th>Trainer</th>
+                    <th>OU</th>
+                    <th>Training Type</th>
+                    <th>Title</th>
+                    <th>Duration (hrs)</th>
+                    <th>Participants</th>
+                    <th>Mode</th>
+                    <th>Remarks</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.from_date.strftime('%Y-%m-%d') }}<br>to<br>{{ entry.to_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if entry.is_training %}
+                        <span style="background-color: #D1FAE5; color: #065F46; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Training</span>
+                        {% else %}
+                        <span style="background-color: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Non-Training</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ entry.trainer.name }}</td>
+                    <td>{{ entry.ou.name if entry.is_training else '-' }}</td>
+                    <td>{{ entry.training_type.name if entry.is_training else '-' }}</td>
+                    <td>{{ entry.title }}</td>
+                    <td>{{ entry.duration }}</td>
+                    <td>{{ entry.participants_count if entry.is_training else '-' }}</td>
+                    <td>{{ entry.mode if entry.is_training else '-' }}</td>
+                    <td>{{ entry.remarks }}</td>
+                    <td>
+                        <a href="{{ url_for('edit_entry', id=entry.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="11" style="text-align: center; color: var(--text-muted);">No entries found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
