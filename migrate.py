@@ -12,6 +12,13 @@ def migrate():
         )
         cursor = conn.cursor()
         
+        try:
+            cursor.execute("ALTER TABLE training_entries ADD COLUMN status VARCHAR(50) DEFAULT 'Completed'")
+            print("Added status column to training_entries.")
+        except Exception as e:
+            print(f"status column might already exist: {e}")
+            
+        # Modify existing columns
         # Add is_training column
         try:
             cursor.execute("ALTER TABLE training_entries ADD COLUMN is_training BOOLEAN DEFAULT TRUE")

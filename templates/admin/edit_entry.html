@@ -77,6 +77,16 @@
                     <option value="Offline" {% if entry.mode == 'Offline' %}selected{% endif %}>Offline</option>
                 </select>
             </div>
+
+            <div class="form-group training-field" style="{% if not entry.is_training %}display: none;{% endif %}">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-control" {% if entry.is_training %}required{% endif %}>
+                    <option value="Session in progress" {% if entry.status == 'Session in progress' %}selected{% endif %}>Session in progress</option>
+                    <option value="Project Phase" {% if entry.status == 'Project Phase' %}selected{% endif %}>Project Phase</option>
+                    <option value="Internship Phase" {% if entry.status == 'Internship Phase' %}selected{% endif %}>Internship Phase</option>
+                    <option value="Completed" {% if entry.status == 'Completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
             
             <div class="form-group" style="grid-column: span 1;">
                 <label class="form-label">Remarks / Feedback</label>

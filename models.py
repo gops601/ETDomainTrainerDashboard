@@ -48,5 +48,6 @@ class TrainingEntry(db.Model):
     participants_count = db.Column(db.Integer, nullable=True)
     duration = db.Column(db.Float, nullable=False, default=0.0)
     mode = db.Column(db.String(50), nullable=True) # 'Online' or 'Offline'
+    status = db.Column(db.String(50), nullable=True, default='Completed') # 'Session in progress', 'Project Phase', 'Internship Phase', 'Completed'
     remarks = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

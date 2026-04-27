@@ -107,6 +107,7 @@
                     <th>Duration (hrs)</th>
                     <th>Participants</th>
                     <th>Mode</th>
+                    <th>Status</th>
                     <th>Remarks</th>
                     <th>Actions</th>
                 </tr>
@@ -130,6 +131,13 @@
                     <td>{{ entry.duration }}</td>
                     <td>{{ entry.participants_count if entry.is_training else '-' }}</td>
                     <td>{{ entry.mode if entry.is_training else '-' }}</td>
+                    <td>
+                        {% if entry.is_training %}
+                        <span style="background-color: #DBEAFE; color: #1E40AF; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">{{ entry.status }}</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
                     <td>{{ entry.remarks }}</td>
                     <td>
                         <a href="{{ url_for('edit_entry', id=entry.id) }}" class="btn btn-secondary btn-sm">Edit</a>
@@ -137,7 +145,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="13" style="text-align: center; color: var(--text-muted);">No entries found.</td>
+                    <td colspan="14" style="text-align: center; color: var(--text-muted);">No entries found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

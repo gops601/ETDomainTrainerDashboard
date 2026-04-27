@@ -346,9 +346,21 @@ def register_routes(app):
 
     @app.route('/admin/entry/edit/<int:id>', methods=['GET', 'POST'])
     @login_required
-    @admin_required
     def edit_entry(id):
         entry = TrainingEntry.query.get_or_404(id)
+        
+        # Check permissions: Admin, Domain Lead (of same domain), or the Owner
+        can_edit = False
+        if current_user.role == 'admin':
+            can_edit = True
+        elif current_user.role == 'domain_lead' and entry.trainer.domain == current_user.domain:
+            can_edit = True
+        elif entry.trainer_id == current_user.id:
+            can_edit = True
+            
+        if not can_edit:
+            flash('Access denied.', 'danger')
+            return redirect(url_for('index'))
         if request.method == 'POST':
             entry.from_date = datetime.strptime(request.form.get('from_date'), '%Y-%m-%d').date()
             entry.to_date = datetime.strptime(request.form.get('to_date'), '%Y-%m-%d').date()
@@ -361,11 +373,13 @@ def register_routes(app):
                 entry.training_type_id = int(request.form.get('type_id')) if request.form.get('type_id') else None
                 entry.participants_count = int(request.form.get('participants')) if request.form.get('participants') else None
                 entry.mode = request.form.get('mode')
+                entry.status = request.form.get('status')
             else:
                 entry.ou_id = None
                 entry.training_type_id = None
                 entry.participants_count = None
                 entry.mode = None
+                entry.status = None
                 
             entry.title = request.form.get('title')
             entry.duration = float(request.form.get('duration', 0.0))
@@ -373,7 +387,9 @@ def register_routes(app):
             
             db.session.commit()
             flash('Entry updated successfully.', 'success')
-            return redirect(url_for('admin_dashboard'))
+            if current_user.role in ['admin', 'domain_lead']:
+                return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('trainer_dashboard'))
             
         ous = OU.query.all()
         types = TrainingType.query.all()
@@ -420,6 +436,7 @@ def register_routes(app):
             participants = request.form.getlist('participants[]')
             durations = request.form.getlist('duration[]')
             modes = request.form.getlist('mode[]')
+            statuses = request.form.getlist('status[]')
             remarks = request.form.getlist('remarks[]')
             
             try:
@@ -446,6 +463,7 @@ def register_routes(app):
                         participants_count=int(participants[i]) if is_train and participants[i] else None,
                         duration=float(durations[i]) if i < len(durations) and durations[i] else 0.0,
                         mode=modes[i] if is_train and i < len(modes) else None,
+                        status=statuses[i] if is_train and i < len(statuses) else None,
                         remarks=remarks[i] if i < len(remarks) else ""
                     )
                     db.session.add(entry)
