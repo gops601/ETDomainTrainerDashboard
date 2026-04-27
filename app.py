@@ -49,8 +49,6 @@ def create_app():
     
     # Initialize DB schema
     with app.app_context():
-        from migrate import migrate
-        migrate()
         db.create_all()
         create_default_admin()
         
@@ -135,6 +133,8 @@ def register_routes(app):
                 current_user.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
                 current_user.must_change_password = False
                 db.session.commit()
+                # Refresh session with new password
+                login_user(current_user)
                 flash('Password updated successfully.', 'success')
                 return redirect(url_for('index'))
                 

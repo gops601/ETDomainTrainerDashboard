@@ -24,9 +24,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
 COPY . /app/
+RUN chmod +x /app/entrypoint.sh
 
 # Expose port 5000 for the app
 EXPOSE 5000
 
-# Command to run the application using Gunicorn
-CMD ["gunicorn", "app:create_app()", "--bind", "0.0.0.0:5000"]
+# Run the entrypoint script
+CMD ["/app/entrypoint.sh"]
