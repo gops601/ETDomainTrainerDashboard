@@ -49,6 +49,8 @@ def create_app():
     
     # Initialize DB schema
     with app.app_context():
+        from migrate import migrate
+        migrate()
         db.create_all()
         create_default_admin()
         

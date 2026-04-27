@@ -10,7 +10,7 @@ class Config:
     # Construct MySQL URI
     MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'Admin123')
-    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
+    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'mysql-db')
     MYSQL_DB = os.environ.get('MYSQL_DB', 'training_dashboard')
     
     # We use PyMySQL driver

@@ -76,6 +76,7 @@
                     <option value="AI" {% if request.args.get('domain') == 'AI' %}selected{% endif %}>AI</option>
                     <option value="Cyber" {% if request.args.get('domain') == 'Cyber' %}selected{% endif %}>Cyber</option>
                     <option value="DM" {% if request.args.get('domain') == 'DM' %}selected{% endif %}>DM</option>
+                    <option value="Other" {% if request.args.get('domain') == 'Other' %}selected{% endif %}>Other</option>
                 </select>
             </div>
             {% endif %}
