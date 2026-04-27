@@ -33,7 +33,7 @@
                     <td>{{ ou.name }}</td>
                     <td>
                         {% if current_user.role == 'admin' %}
-                        <a href="{{ url_for('delete_ou', id=ou.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure? This will delete all associated training types and entries.')">Delete</a>
+                        <a href="{{ url_for('delete_ou', id=ou.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('{% if ou.entries|length > 0 %}This OU has {{ ou.entries|length }} entries associated with it. Deleting it will remove all these entries and all associated Training Types. Are you sure?{% else %}Are you sure you want to delete this OU?{% endif %}')">Delete</a>
                         {% else %}
                         <span style="color: var(--text-muted); font-size: 0.8rem;">Admin only</span>
                         {% endif %}

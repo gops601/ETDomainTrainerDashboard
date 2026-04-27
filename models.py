@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     tsp_name = db.Column(db.String(100), nullable=True)
     must_change_password = db.Column(db.Boolean, default=False, nullable=False)
     
-    entries = db.relationship('TrainingEntry', backref='trainer', lazy=True)
+    entries = db.relationship('TrainingEntry', backref='trainer', lazy=True, cascade='all, delete-orphan')
 
 class OU(db.Model):
     __tablename__ = 'organizational_units'
@@ -25,7 +25,7 @@ class OU(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     
     training_types = db.relationship('TrainingType', backref='ou', lazy=True, cascade='all, delete-orphan')
-    entries = db.relationship('TrainingEntry', backref='ou', lazy=True)
+    entries = db.relationship('TrainingEntry', backref='ou', lazy=True, cascade='all, delete-orphan')
 
 class TrainingType(db.Model):
     __tablename__ = 'training_types'
@@ -33,7 +33,7 @@ class TrainingType(db.Model):
     name = db.Column(db.String(100), nullable=False)
     ou_id = db.Column(db.Integer, db.ForeignKey('organizational_units.id'), nullable=False)
     
-    entries = db.relationship('TrainingEntry', backref='training_type', lazy=True)
+    entries = db.relationship('TrainingEntry', backref='training_type', lazy=True, cascade='all, delete-orphan')
 
 class TrainingEntry(db.Model):
     __tablename__ = 'training_entries'

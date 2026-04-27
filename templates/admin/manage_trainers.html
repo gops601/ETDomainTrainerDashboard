@@ -122,7 +122,7 @@
                         {% if trainer.id != current_user.id %}
                         <a href="{{ url_for('reset_password', id=trainer.id) }}" class="btn btn-secondary btn-sm" onclick="return confirm('Reset this user\'s password to Trainer@ict?')">Reset Password</a>
                         <a href="{{ url_for('delete_trainer', id=trainer.id) }}" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Are you sure?')">Delete</a>
+                            onclick="return confirm('{% if trainer.entries|length > 0 %}This trainer has {{ trainer.entries|length }} entries. Are you sure you want to delete them and all their data?{% else %}Are you sure you want to delete this trainer?{% endif %}')">Delete</a>
                         {% endif %}
                     </td>
                 </tr>
