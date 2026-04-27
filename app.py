@@ -166,9 +166,9 @@ def register_routes(app):
             query = query.filter(User.domain == domain_filter)
         
         if week_from:
-            query = query.filter(TrainingEntry.from_date >= week_from)
+            query = query.filter(TrainingEntry.to_date >= week_from)
         if week_to:
-            query = query.filter(TrainingEntry.to_date <= week_to)
+            query = query.filter(TrainingEntry.from_date <= week_to)
         if trainer_id:
             query = query.filter(TrainingEntry.trainer_id == trainer_id)
         if ou_id:
@@ -180,15 +180,15 @@ def register_routes(app):
         
         # Calculate KPIs
         total_training_hrs = sum(e.duration for e in entries if e.is_training)
-        total_non_training_hrs = sum(e.duration for e in entries if not e.is_training)
-        total_participants = sum((e.participants_count or 0) for e in entries if e.is_training)
-        total_entries = len(entries)
+        completed_projects = len([e for e in entries if e.status == 'Completed'])
+        total_project_entries = len(entries)
+        unique_projects = len(set(e.title for e in entries if e.title))
         
         kpis = {
             'total_training_hrs': total_training_hrs,
-            'total_non_training_hrs': total_non_training_hrs,
-            'total_participants': total_participants,
-            'total_entries': total_entries
+            'completed_projects': completed_projects,
+            'total_project_entries': total_project_entries,
+            'unique_projects': unique_projects
         }
         
         if current_user.role == 'domain_lead':
@@ -408,15 +408,15 @@ def register_routes(app):
         
         # Calculate KPIs
         total_training_hrs = sum(e.duration for e in entries if e.is_training)
-        total_non_training_hrs = sum(e.duration for e in entries if not e.is_training)
-        total_participants = sum((e.participants_count or 0) for e in entries if e.is_training)
-        total_entries = len(entries)
+        completed_projects = len([e for e in entries if e.status == 'Completed'])
+        total_project_entries = len(entries)
+        unique_projects = len(set(e.title for e in entries if e.title))
         
         kpis = {
             'total_training_hrs': total_training_hrs,
-            'total_non_training_hrs': total_non_training_hrs,
-            'total_participants': total_participants,
-            'total_entries': total_entries
+            'completed_projects': completed_projects,
+            'total_project_entries': total_project_entries,
+            'unique_projects': unique_projects
         }
         
         return render_template('trainer/dashboard.html', entries=entries, kpis=kpis)
